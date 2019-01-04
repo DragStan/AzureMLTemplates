@@ -1,0 +1,2 @@
+# AzureMLTemplates
+AzureMLRRSWebTemplate
