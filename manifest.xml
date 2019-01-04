@@ -1,3 +1,0 @@
-﻿<MSDeploy.iisApp>
-    <iisapp path="AzureMLRRSWebTemplate" /> 
-</MSDeploy.iisApp>
