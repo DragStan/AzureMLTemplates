@@ -12,7 +12,6 @@ namespace AzureMLRRSWebTemplate
     public partial class Setting : System.Web.UI.Page
     {
         AMLParameterObject paramObj = new AMLParameterObject();
-        string globalPost = "global";
         string inputPost = "input";
         string outputPost = "output";
         protected void Page_Load(object sender, EventArgs e)
@@ -86,52 +85,25 @@ namespace AzureMLRRSWebTemplate
         {
             try
             {
-                if (paramObj.listInputParameter != null)
+                for (int i = 0; i < paramObj.listInputParameter.Count; i++)
                 {
-                    for (int i = 0; i < paramObj.listInputParameter.Count; i++)
+                    var param = paramObj.listInputParameter[i];
+                    param.Alias = ((TextBox)FindControl(string.Format("input{0}_alias_{1}", i, inputPost))).Text;
+                    param.Description = ((TextBox)FindControl(string.Format("input{0}_description_{1}", i, inputPost))).Text;
+                    if (param.Type == "integer" || param.Type == "number")
                     {
-                        var param = paramObj.listInputParameter[i];
-                        param.Alias = ((TextBox)FindControl(string.Format("input_alias_{0}_{1}_{2}", inputPost, param.Name,param.Group))).Text;
-                        param.Description = ((TextBox)FindControl(string.Format("input_description_{0}_{1}_{2}", inputPost, param.Name,param.Group))).Text;
-                        if (param.Type == "integer" || param.Type == "number")
-                        {
-                            param.MinValue = ((TextBox)FindControl(string.Format("input_min_{0}_{1}_{2}", inputPost, param.Name,param.Group))).Text;
-                            param.MaxValue = ((TextBox)FindControl(string.Format("input_max_{0}_{1}_{2}", inputPost, param.Name,param.Group))).Text;
-                        }
-
-                        if (param.StrEnum != null && param.StrEnum.Count > 0)
-                        {
-                            param.DefaultValue = ((DropDownList)FindControl(string.Format("input_default_{0}_{1}_{2}", inputPost, param.Name,param.Group))).SelectedValue;
-                        }
-                        else
-                        {
-
-                            param.DefaultValue = ((TextBox)FindControl(string.Format("input_default_{0}_{1}_{2}", inputPost, param.Name,param.Group))).Text;
-                        }
+                        param.MinValue = ((TextBox)FindControl(string.Format("input{0}_min_{1}", i, inputPost))).Text;
+                        param.MaxValue = ((TextBox)FindControl(string.Format("input{0}_max_{1}", i, inputPost))).Text;
                     }
-                }
 
-                if (paramObj.listGlobalParameter != null)
-                {
-                    for (int i = 0; i < paramObj.listGlobalParameter.Count; i++)
+                    if (param.StrEnum != null && param.StrEnum.Count > 0)
                     {
-                        var param = paramObj.listGlobalParameter[i];
-                        param.Alias = ((TextBox)FindControl(string.Format("input{0}_alias_{1}", i, globalPost))).Text;
-                        param.Description = ((TextBox)FindControl(string.Format("input{0}_description_{1}", i, globalPost))).Text;
-                        if (param.Type == "integer" || param.Type == "number")
-                        {
-                            param.MinValue = ((TextBox)FindControl(string.Format("input{0}_min_{1}", i, globalPost))).Text;
-                            param.MaxValue = ((TextBox)FindControl(string.Format("input{0}_max_{1}", i, globalPost))).Text;
-                        }
+                        param.DefaultValue = ((DropDownList)FindControl(string.Format("input{0}_default_{1}", i, inputPost))).SelectedValue;
+                    }
+                    else
+                    {
 
-                        if (param.StrEnum != null && param.StrEnum.Count > 0)
-                        {
-                            param.DefaultValue = ((DropDownList)FindControl(string.Format("input{0}_default_{1}", i, globalPost))).SelectedValue;
-                        }
-                        else
-                        {
-                            param.DefaultValue = ((TextBox)FindControl(string.Format("input{0}_default_{1}", i, globalPost))).Text;
-                        }
+                        param.DefaultValue = ((TextBox)FindControl(string.Format("input{0}_default_{1}", i, inputPost))).Text;
                     }
                 }
 
@@ -165,8 +137,6 @@ namespace AzureMLRRSWebTemplate
             GenarateInformation();
 
             GenerateInputParameterList();
-
-            GenerateGlobalParameterList();
 
             GenerateOutputParameterList();
 
@@ -218,114 +188,49 @@ namespace AzureMLRRSWebTemplate
 
         private void GenerateOutputParameterList()
         {
-            if (paramObj.listOutputParameter != null && paramObj.listOutputParameter.Count > 0)
+            //parameterRegion.Controls.Clear();
+            parameterRegion.Controls.Add(new LiteralControl("<p class=\"titleresult\">List of Output Parameters</p>"));
+            parameterRegion.Controls.Add(new LiteralControl("<table class=\"table table-hover table-bordered\">"));
+            parameterRegion.Controls.Add(new LiteralControl("<tr class=\"info\"><th>#</th><th>Name</th><th>Type</th><th>Alias</th><th>Enable</th></tr>"));
+
+            for (int i = 0; i < paramObj.listOutputParameter.Count; i++)
             {
-                //parameterRegion.Controls.Clear();
-                parameterRegion.Controls.Add(new LiteralControl("<p class=\"titleresult\">List of Output Parameters</p>"));
-                parameterRegion.Controls.Add(new LiteralControl("<table class=\"table table-hover table-bordered\">"));
-                parameterRegion.Controls.Add(new LiteralControl("<tr class=\"info\"><th>#</th><th>Name</th><th>Type</th><th>Alias</th><th>Enabled</th></tr>"));
+                var param = paramObj.listOutputParameter[i];
+                parameterRegion.Controls.Add(new LiteralControl("<tr>"));
+                parameterRegion.Controls.Add(new LiteralControl(string.Format("<td>{0}</td>", i + 1)));
+                parameterRegion.Controls.Add(new LiteralControl(string.Format("<td>{0}</td>", param.Name)));
+                parameterRegion.Controls.Add(new LiteralControl(string.Format("<td>{0}</td>", param.Type)));
 
-                for (int i = 0; i < paramObj.listOutputParameter.Count; i++)
-                {
-                    var param = paramObj.listOutputParameter[i];
-                    parameterRegion.Controls.Add(new LiteralControl("<tr>"));
-                    parameterRegion.Controls.Add(new LiteralControl(string.Format("<td>{0}</td>", i + 1)));
-                    parameterRegion.Controls.Add(new LiteralControl(string.Format("<td>{0}</td>", param.Name)));
-                    parameterRegion.Controls.Add(new LiteralControl(string.Format("<td>{0}</td>", param.Type)));
+                ////////// Alias value control //////
+                parameterRegion.Controls.Add(new LiteralControl(string.Format("<td class=\"mytextbox\">")));
+                parameterRegion.Controls.Add(GenerateControlAlias(param, string.Format("output{0}_alias_{1}", i, outputPost)));
+                parameterRegion.Controls.Add(new LiteralControl(string.Format("</td>")));
+                //////////////////////////////////////
 
-                    ////////// Alias value control //////
-                    parameterRegion.Controls.Add(new LiteralControl(string.Format("<td class=\"mytextbox\">")));
-                    parameterRegion.Controls.Add(GenerateControlAlias(param, string.Format("output{0}_alias_{1}", i, outputPost)));
-                    parameterRegion.Controls.Add(new LiteralControl(string.Format("</td>")));
-                    //////////////////////////////////////
-
-                    ////////// Enable control //////
-                    parameterRegion.Controls.Add(new LiteralControl(string.Format("<td class=\"mytextbox\">")));
-                    parameterRegion.Controls.Add(GenerateCOntrolEnable(param, string.Format("output{0}_enable_{1}", i, outputPost)));
-                    parameterRegion.Controls.Add(new LiteralControl(string.Format("<script>$(\"input[name='{0}']\").bootstrapSwitch();</script>", string.Format("output{0}_enable_{1}", i, outputPost))));
-                    parameterRegion.Controls.Add(new LiteralControl(string.Format("</td>")));
-                    //////////////////////////////////////
+                ////////// Enable control //////
+                parameterRegion.Controls.Add(new LiteralControl(string.Format("<td class=\"mytextbox\">")));
+                parameterRegion.Controls.Add(GenerateCOntrolEnable(param, string.Format("output{0}_enable_{1}", i, outputPost)));
+                parameterRegion.Controls.Add(new LiteralControl(string.Format("<script>$(\"input[name='{0}']\").bootstrapSwitch();</script>", string.Format("output{0}_enable_{1}", i, outputPost))));
+                parameterRegion.Controls.Add(new LiteralControl(string.Format("</td>")));
+                //////////////////////////////////////
 
 
-                    parameterRegion.Controls.Add(new LiteralControl("</tr>"));
-                }
-
-                parameterRegion.Controls.Add(new LiteralControl("</table>"));
+                parameterRegion.Controls.Add(new LiteralControl("</tr>"));
             }
+
+            parameterRegion.Controls.Add(new LiteralControl("</table>"));
         }
         private void GenerateInputParameterList()
         {
-            if (paramObj.listInputGroup != null && paramObj.listInputGroup.Count > 0)
-            {
-                //parameterRegion.Controls.Clear();
-                parameterRegion.Controls.Add(new LiteralControl("<p class=\"titleresult\">List of Input Parameters</p>"));
-                parameterRegion.Controls.Add(new LiteralControl("<table class=\"table table-hover table-bordered\">"));
-                parameterRegion.Controls.Add(new LiteralControl("<tr class=\"info\"><th>#</th><th>Name</th><th>Type</th><th>Alias</th><th>Description</th><th>Default</th><th>Min</th><th>Max</th></tr>"));
+            //parameterRegion.Controls.Clear();
+            parameterRegion.Controls.Add(new LiteralControl("<p class=\"titleresult\">List of Input Parameters</p>"));
+            parameterRegion.Controls.Add(new LiteralControl("<table class=\"table table-hover table-bordered\">"));
+            parameterRegion.Controls.Add(new LiteralControl("<tr class=\"info\"><th>#</th><th>Name</th><th>Type</th><th>Alias</th><th>Description</th><th>Default</th><th>Min</th><th>Max</th></tr>"));
 
-                foreach (var groupName in paramObj.listInputGroup)
+            if (paramObj.listInputParameter != null)
+                for (int i = 0; i < paramObj.listInputParameter.Count; i++)
                 {
-                    List<AMLParam> listParam = paramObj.listInputParameter.Where(x => (x.Group == groupName)).ToList();
-                    parameterRegion.Controls.Add(new LiteralControl("<tr><td colspan=\"8\" style=\"background-color: azure\">" + groupName + "</td></tr>"));
-                    for (int i = 0; i < listParam.Count; i++)
-                    {
-                        var param = listParam[i];
-                        parameterRegion.Controls.Add(new LiteralControl("<tr>"));
-                        parameterRegion.Controls.Add(new LiteralControl(string.Format("<td>{0}</td>", i + 1)));
-                        parameterRegion.Controls.Add(new LiteralControl(string.Format("<td>{0}</td>", param.Name)));
-                        parameterRegion.Controls.Add(new LiteralControl(string.Format("<td>{0}</td>", param.Type)));
-                        //parameterRegion.Controls.Add(new LiteralControl(string.Format("<td>{0}</td>", param.Format)));
-
-                        ////////// Alias value control //////
-                        parameterRegion.Controls.Add(new LiteralControl(string.Format("<td class=\"mytextbox\">")));
-                        parameterRegion.Controls.Add(GenerateControlAlias(param, string.Format("input_alias_{0}_{1}_{2}", inputPost, param.Name,param.Group)));
-                        parameterRegion.Controls.Add(new LiteralControl(string.Format("</td>")));
-                        //////////////////////////////////////
-
-                        ////////// Description value control //////
-                        parameterRegion.Controls.Add(new LiteralControl(string.Format("<td class=\"mytextbox\">")));
-                        parameterRegion.Controls.Add(GenerateControlDescription(param, string.Format("input_description_{0}_{1}_{2}", inputPost, param.Name,param.Group)));
-                        parameterRegion.Controls.Add(new LiteralControl(string.Format("</td>")));
-                        //////////////////////////////////////
-
-                        ////////// Default value control //////
-                        parameterRegion.Controls.Add(new LiteralControl(string.Format("<td class=\"mydropdown\">")));
-                        parameterRegion.Controls.Add(GenerateControlDefault(param, string.Format("input_default_{0}_{1}_{2}", inputPost, param.Name,param.Group)));
-                        parameterRegion.Controls.Add(new LiteralControl(string.Format("</td>")));
-                        //////////////////////////////////////
-
-                        ////////// Min value control //////
-                        parameterRegion.Controls.Add(new LiteralControl(string.Format("<td class=\"mynumber\">")));
-                        parameterRegion.Controls.Add(GenerateControlMin(param, string.Format("input_min_{0}_{1}_{2}", inputPost, param.Name,param.Group)));
-                        parameterRegion.Controls.Add(new LiteralControl(string.Format("</td>")));
-                        //////////////////////////////////////
-
-                        ////////// Max value control //////
-                        parameterRegion.Controls.Add(new LiteralControl(string.Format("<td class=\"mynumber\">")));
-                        parameterRegion.Controls.Add(GenerateControlMax(param, string.Format("input_max_{0}_{1}_{2}", inputPost, param.Name,param.Group)));
-                        parameterRegion.Controls.Add(new LiteralControl(string.Format("</td>")));
-                        //////////////////////////////////////
-
-                        parameterRegion.Controls.Add(new LiteralControl("</tr>"));
-                    }
-                }
-
-                parameterRegion.Controls.Add(new LiteralControl("</table>"));
-            }
-        }
-
-        private void GenerateGlobalParameterList()
-        {
-            if (paramObj.listGlobalParameter != null && paramObj.listGlobalParameter.Count > 0)
-            {
-                //parameterRegion.Controls.Clear();
-                parameterRegion.Controls.Add(new LiteralControl("<p class=\"titleresult\">List of Global Parameters</p>"));
-                parameterRegion.Controls.Add(new LiteralControl("<table class=\"table table-hover table-bordered\">"));
-                parameterRegion.Controls.Add(new LiteralControl("<tr class=\"info\"><th>#</th><th>Name</th><th>Type</th><th>Alias</th><th>Description</th><th>Default</th><th>Min</th><th>Max</th></tr>"));
-
-
-                for (int i = 0; i < paramObj.listGlobalParameter.Count; i++)
-                {
-                    var param = paramObj.listGlobalParameter[i];
+                    var param = paramObj.listInputParameter[i];
                     parameterRegion.Controls.Add(new LiteralControl("<tr>"));
                     parameterRegion.Controls.Add(new LiteralControl(string.Format("<td>{0}</td>", i + 1)));
                     parameterRegion.Controls.Add(new LiteralControl(string.Format("<td>{0}</td>", param.Name)));
@@ -334,39 +239,39 @@ namespace AzureMLRRSWebTemplate
 
                     ////////// Alias value control //////
                     parameterRegion.Controls.Add(new LiteralControl(string.Format("<td class=\"mytextbox\">")));
-                    parameterRegion.Controls.Add(GenerateControlAlias(param, string.Format("input{0}_alias_{1}", i, globalPost)));
+                    parameterRegion.Controls.Add(GenerateControlAlias(param, string.Format("input{0}_alias_{1}", i, inputPost)));
                     parameterRegion.Controls.Add(new LiteralControl(string.Format("</td>")));
                     //////////////////////////////////////
 
                     ////////// Description value control //////
                     parameterRegion.Controls.Add(new LiteralControl(string.Format("<td class=\"mytextbox\">")));
-                    parameterRegion.Controls.Add(GenerateControlDescription(param, string.Format("input{0}_description_{1}", i, globalPost)));
+                    parameterRegion.Controls.Add(GenerateControlDescription(param, string.Format("input{0}_description_{1}", i, inputPost)));
                     parameterRegion.Controls.Add(new LiteralControl(string.Format("</td>")));
                     //////////////////////////////////////
 
                     ////////// Default value control //////
                     parameterRegion.Controls.Add(new LiteralControl(string.Format("<td class=\"mydropdown\">")));
-                    parameterRegion.Controls.Add(GenerateControlDefault(param, string.Format("input{0}_default_{1}", i, globalPost)));
+                    parameterRegion.Controls.Add(GenerateControlDefault(param, string.Format("input{0}_default_{1}", i, inputPost)));
                     parameterRegion.Controls.Add(new LiteralControl(string.Format("</td>")));
                     //////////////////////////////////////
 
                     ////////// Min value control //////
                     parameterRegion.Controls.Add(new LiteralControl(string.Format("<td class=\"mynumber\">")));
-                    parameterRegion.Controls.Add(GenerateControlMin(param, string.Format("input{0}_min_{1}", i, globalPost)));
+                    parameterRegion.Controls.Add(GenerateControlMin(param, string.Format("input{0}_min_{1}", i, inputPost)));
                     parameterRegion.Controls.Add(new LiteralControl(string.Format("</td>")));
                     //////////////////////////////////////
 
                     ////////// Max value control //////
                     parameterRegion.Controls.Add(new LiteralControl(string.Format("<td class=\"mynumber\">")));
-                    parameterRegion.Controls.Add(GenerateControlMax(param, string.Format("input{0}_max_{1}", i, globalPost)));
+                    parameterRegion.Controls.Add(GenerateControlMax(param, string.Format("input{0}_max_{1}", i, inputPost)));
                     parameterRegion.Controls.Add(new LiteralControl(string.Format("</td>")));
                     //////////////////////////////////////
 
                     parameterRegion.Controls.Add(new LiteralControl("</tr>"));
                 }
 
-                parameterRegion.Controls.Add(new LiteralControl("</table>"));
-            }
+            parameterRegion.Controls.Add(new LiteralControl("</table>"));
+
         }
 
         private Control GenerateCOntrolEnable(AMLParam param, string id)
@@ -405,11 +310,10 @@ namespace AzureMLRRSWebTemplate
                 return GenerateDropdownList(param, id);
             else if (param.Type == "integer")
             {
-                txt.TextMode = TextBoxMode.Number;                
+                txt.TextMode = TextBoxMode.Number;
+                return txt;
             }
-            else if (param.Format == "script")
-                txt.TextMode = TextBoxMode.MultiLine;
-            return txt;
+            else return txt;
         }
 
         private Control GenerateControlMin(AMLParam param, string id)
